@@ -12,6 +12,7 @@ model = tf.keras.models.load_model(
 X_scaler = joblib.load("X_scaler.pkl")
 y_scaler = joblib.load("y_scaler.pkl")
 
+
 # Page title
 st.title("Machine Temperature Predictor")
 
@@ -20,6 +21,8 @@ st.write(
     "from the previous two timestamps."
 )
 
+
+# Previous Timestamp 1
 st.subheader("Previous Timestamp 1")
 
 temperature_1 = st.number_input(
@@ -32,6 +35,8 @@ vibration_1 = st.number_input(
     value=3.5
 )
 
+
+# Previous Timestamp 2
 st.subheader("Previous Timestamp 2")
 
 temperature_2 = st.number_input(
@@ -44,6 +49,7 @@ vibration_2 = st.number_input(
     value=3.6
 )
 
+
 # Prediction button
 if st.button("Predict Next Temperature"):
 
@@ -53,7 +59,7 @@ if st.button("Predict Next Temperature"):
         [temperature_2, vibration_2]
     ])
 
-    # Scale input using the SAME scaler used during training
+    # Scale input using the SAME X_scaler
     input_scaled = X_scaler.transform(input_data)
 
     # RNN input shape:
@@ -62,13 +68,13 @@ if st.button("Predict Next Temperature"):
         (1, 2, 2)
     )
 
-    # Prediction in scaled form
+    # Predict using trained RNN
     prediction_scaled = model.predict(
         input_scaled,
         verbose=0
     )
 
-    # Convert prediction back to temperature in °C
+    # Convert scaled prediction back to °C
     prediction = y_scaler.inverse_transform(
         prediction_scaled
     )
@@ -77,6 +83,7 @@ if st.button("Predict Next Temperature"):
         prediction[0][0]
     )
 
+    # Display result
     st.success(
         f"Predicted Next Machine Temperature: "
         f"{predicted_temperature:.2f} °C"
