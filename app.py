@@ -1,11 +1,16 @@
 import streamlit as st
 import numpy as np
 import tensorflow as tf
+import joblib
 
 # Load trained model
 model = tf.keras.models.load_model(
     "machine_temperature_rnn.keras"
 )
+
+# Load the SAME scalers used during training
+X_scaler = joblib.load("X_scaler.pkl")
+y_scaler = joblib.load("y_scaler.pkl")
 
 # Page title
 st.title("Machine Temperature Predictor")
@@ -48,17 +53,24 @@ if st.button("Predict Next Temperature"):
         [temperature_2, vibration_2]
     ])
 
+    # Scale input using the SAME scaler used during training
+    input_scaled = X_scaler.transform(input_data)
+
     # RNN input shape:
     # (samples, time steps, features)
-
-    input_data = input_data.reshape(
+    input_scaled = input_scaled.reshape(
         (1, 2, 2)
     )
 
-    # Prediction
-    prediction = model.predict(
-        input_data,
+    # Prediction in scaled form
+    prediction_scaled = model.predict(
+        input_scaled,
         verbose=0
+    )
+
+    # Convert prediction back to temperature in °C
+    prediction = y_scaler.inverse_transform(
+        prediction_scaled
     )
 
     predicted_temperature = float(
